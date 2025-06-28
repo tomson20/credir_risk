@@ -32,16 +32,16 @@ jobs:
 
 
       - name: Ensure Class Balance
-        run: python scripts/ensure_balance.py
+        run: python credir_risk/scripts/ensure_balance.py
 
       - name: Generate Training Data
-        run: python scripts/generate_train_data.py
+        run: python credir_risk/scripts/generate_train_data.py
 
       - name: Create models/ directory
         run: mkdir -p models/
 
       - name: Run Training Script
-        run: python training/train_model_with_mlflow.py
+        run: python credir_risk/training/train_model_with_mlflow.py
 
       - name: Commit and Push Updated Model
         run: |
