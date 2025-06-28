@@ -1,0 +1,53 @@
+name: Train Credit Risk Model
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: credir_risk
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ensure Class Balance
+        run: python scripts/ensure_balance.py
+
+      - name: Generate Training Data
+        run: python scripts/generate_train_data.py
+
+      - name: Create models/ directory
+        run: mkdir -p models/
+
+      - name: Run Training Script
+        run: python training/train_model_with_mlflow.py
+
+      - name: Commit and Push Updated Model
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/train_data.csv models/best_model.pkl
+          git commit -m "Auto-update model & balanced data via GitHub Actions" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
